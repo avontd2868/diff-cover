@@ -79,19 +79,19 @@ class XmlCoverageReporter(BaseViolationReporter):
             xpath = ".//class[@filename='{0}']/lines/line".format(src_path)
             # Need to init violations as none instead of an emptyset or intersection would be []
             violations = None
-            # Measured is an emptyset
+            # Measured starts as an emptyset
             measured = set()
             # Loop through the files that contain the xml roots
             for xml_document in self._xml_roots:
                 line_nodes = xml_document.findall(xpath)
                 # First case, need to define violations initially
                 if violations is None:
-                    violations =  set(
-                    Violation(int(line.get('number')), None)
-                    for line in line_nodes
-                    if int(line.get('hits', 0)) == 0)
-                # If it's not the first case, take the intersection of the new
-                # violations list and its old self
+                    violations = set(
+                        Violation(int(line.get('number')), None)
+                        for line in line_nodes
+                        if int(line.get('hits', 0)) == 0)
+                # If we already have a violations set, take the intersection of the new
+                # violations set and its old self
                 else:
                     violations = violations & set(
                         Violation(int(line.get('number')), None)

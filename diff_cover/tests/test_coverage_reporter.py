@@ -1,7 +1,6 @@
 import unittest
 from lxml import etree
 from diff_cover.violations_reporter import XmlCoverageReporter, Violation
-from helpers import line_numbers
 
 
 class XmlCoverageReporterTest(unittest.TestCase):
@@ -114,6 +113,32 @@ class XmlCoverageReporterTest(unittest.TestCase):
         # of covered/uncovered lines
         self.assertEqual(violations1 & violations2 & violations3, coverage.violations('file1.py'))
         self.assertEqual(measured1 | measured2 | measured3, coverage.measured('file1.py'))
+
+    def test_empty_violations(self):
+        """
+        Test that an empty violations report is handled properly
+        """
+
+        # Construct the XML report
+        name = "subdir/coverage.xml"
+        file_paths = ['file1.py']
+
+        violations1 = self.VIOLATIONS_1
+        violations2 = set()
+
+        measured1 = self.MEASURED_1
+        measured2 = self.MEASURED_2
+
+        xml = self._coverage_xml(file_paths, violations1, measured1)
+        xml2 = self._coverage_xml(file_paths, violations2, measured2)
+
+        # Parse the report
+        coverage = XmlCoverageReporter([xml2, xml], name)
+
+        # By construction, each file has the same set
+        # of covered/uncovered lines
+        self.assertEqual(violations1 & violations2, coverage.violations('file1.py'))
+        self.assertEqual(measured1 | measured2, coverage.measured('file1.py'))
 
     def test_no_such_file(self):
 
