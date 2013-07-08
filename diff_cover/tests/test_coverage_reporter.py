@@ -1,27 +1,26 @@
 import unittest
 from lxml import etree
 from diff_cover.violations_reporter import XmlCoverageReporter, Violation
-from helpers import line_numbers
 
 
 class XmlCoverageReporterTest(unittest.TestCase):
 
-    VIOLATIONS_1 = set([Violation(3, None), Violation(7, None), Violation(11, None), Violation(13, None)])
-    MEASURED_1 = set([2, 3, 5, 7, 11, 13])
+    MANY_VIOLATIONS = set([Violation(3, None), Violation(7, None), Violation(11, None), Violation(13, None)])
+    FEW_MEASURED = set([2, 3, 5, 7, 11, 13])
 
-    VIOLATIONS_2 = set([Violation(3, None), Violation(11, None)])
-    MEASURED_2 = set([2, 3, 5, 7, 11, 13, 17])
+    FEW_VIOLATIONS = set([Violation(3, None), Violation(11, None)])
+    MANY_MEASURED = set([2, 3, 5, 7, 11, 13, 17])
 
-    VIOLATIONS_3 = set([Violation(11, None)])
-    MEASURED_3 = set([2, 3, 5, 7, 11, 13, 17, 23])
+    ONE_VIOLATION = set([Violation(11, None)])
+    VERY_MANY_MEASURED = set([2, 3, 5, 7, 11, 13, 17, 23, 24, 25, 26, 26, 27])
 
     def test_violations(self):
 
         # Construct the XML report
         name = "subdir/coverage.xml"
         file_paths = ['file1.py', 'subdir/file2.py']
-        violations = self.VIOLATIONS_1
-        measured = self.MEASURED_1
+        violations = self.MANY_VIOLATIONS
+        measured = self.FEW_MEASURED
         xml = self._coverage_xml(file_paths, violations, measured)
 
         # Parse the report
@@ -49,11 +48,11 @@ class XmlCoverageReporterTest(unittest.TestCase):
         name = "subdir/coverage.xml"
         file_paths = ['file1.py']
 
-        violations1 = self.VIOLATIONS_1
-        violations2 = self.VIOLATIONS_2
+        violations1 = self.MANY_VIOLATIONS
+        violations2 = self.FEW_VIOLATIONS
 
-        measured1 = self.MEASURED_1
-        measured2 = self.MEASURED_2
+        measured1 = self.FEW_MEASURED
+        measured2 = self.MANY_MEASURED
 
         xml = self._coverage_xml(file_paths, violations1, measured1)
         xml2 = self._coverage_xml(file_paths, violations2, measured2)
@@ -72,11 +71,11 @@ class XmlCoverageReporterTest(unittest.TestCase):
         name = "subdir/coverage.xml"
         file_paths = ['file1.py']
 
-        violations1 = self.VIOLATIONS_1
-        violations2 = self.VIOLATIONS_2
+        violations1 = self.MANY_VIOLATIONS
+        violations2 = self.FEW_VIOLATIONS
 
-        measured1 = self.MEASURED_1
-        measured2 = self.MEASURED_2
+        measured1 = self.FEW_MEASURED
+        measured2 = self.MANY_MEASURED
 
         xml = self._coverage_xml(file_paths, violations1, measured1)
         xml2 = self._coverage_xml(file_paths, violations2, measured2)
@@ -95,13 +94,13 @@ class XmlCoverageReporterTest(unittest.TestCase):
         name = "subdir/coverage.xml"
         file_paths = ['file1.py']
 
-        violations1 = self.VIOLATIONS_1
-        violations2 = self.VIOLATIONS_2
-        violations3 = self.VIOLATIONS_3
+        violations1 = self.MANY_VIOLATIONS
+        violations2 = self.FEW_VIOLATIONS
+        violations3 = self.ONE_VIOLATION
 
-        measured1 = self.MEASURED_1
-        measured2 = self.MEASURED_2
-        measured3 = self.MEASURED_3
+        measured1 = self.FEW_MEASURED
+        measured2 = self.MANY_MEASURED
+        measured3 = self.VERY_MANY_MEASURED
 
         xml = self._coverage_xml(file_paths, violations1, measured1)
         xml2 = self._coverage_xml(file_paths, violations2, measured2)
@@ -114,6 +113,32 @@ class XmlCoverageReporterTest(unittest.TestCase):
         # of covered/uncovered lines
         self.assertEqual(violations1 & violations2 & violations3, coverage.violations('file1.py'))
         self.assertEqual(measured1 | measured2 | measured3, coverage.measured('file1.py'))
+
+    def test_empty_violations(self):
+        """
+        Test that an empty violations report is handled properly
+        """
+
+        # Construct the XML report
+        name = "subdir/coverage.xml"
+        file_paths = ['file1.py']
+
+        violations1 = self.MANY_VIOLATIONS
+        violations2 = set()
+
+        measured1 = self.FEW_MEASURED
+        measured2 = self.MANY_MEASURED
+
+        xml = self._coverage_xml(file_paths, violations1, measured1)
+        xml2 = self._coverage_xml(file_paths, violations2, measured2)
+
+        # Parse the report
+        coverage = XmlCoverageReporter([xml2, xml], name)
+
+        # By construction, each file has the same set
+        # of covered/uncovered lines
+        self.assertEqual(violations1 & violations2, coverage.violations('file1.py'))
+        self.assertEqual(measured1 | measured2, coverage.measured('file1.py'))
 
     def test_no_such_file(self):
 
