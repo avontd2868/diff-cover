@@ -62,7 +62,7 @@ class XmlCoverageReporter(BaseViolationReporter):
         be included in the generated diff coverage report.
         """
         super(XmlCoverageReporter, self).__init__(name)
-        self._xml = xml_roots
+        self._xml_roots = xml_roots
 
         # Create a dict to cache violations dict results
         # Keys are source file paths, values are output of `violations()`
@@ -70,7 +70,7 @@ class XmlCoverageReporter(BaseViolationReporter):
 
     def _cache_file(self, src_path):
         """
-        Load the data from `self._xml` for `src_path`, if it hasn't been already
+        Load the data from `self._xml_roots` for `src_path`, if it hasn't been already
         """
         # If we have not yet loaded this source file
         if src_path not in self._info_cache:
@@ -79,7 +79,7 @@ class XmlCoverageReporter(BaseViolationReporter):
             xpath = ".//class[@filename='{0}']/lines/line".format(src_path)
             violations = None
             measured = set()
-            for xml_document in self._xml:
+            for xml_document in self._xml_roots:
                 line_nodes = xml_document.findall(xpath)
                 if violations is None:
                     violations =  set(
