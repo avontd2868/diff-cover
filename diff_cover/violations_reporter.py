@@ -53,7 +53,7 @@ class XmlCoverageReporter(BaseViolationReporter):
     Query information from a Cobertura XML coverage report.
     """
 
-    def __init__(self, xml_root, name):
+    def __init__(self, xml_roots, name):
         """
         Load the Cobertura XML coverage report represented
         by the lxml.etree with root element `xml_root`.
@@ -62,7 +62,7 @@ class XmlCoverageReporter(BaseViolationReporter):
         be included in the generated diff coverage report.
         """
         super(XmlCoverageReporter, self).__init__(name)
-        self._xml = xml_root
+        self._xml = xml_roots
 
         # Create a dict to cache violations dict results
         # Keys are source file paths, values are output of `violations()`
@@ -77,16 +77,19 @@ class XmlCoverageReporter(BaseViolationReporter):
 
             # Retrieve the <line> elements for this file
             xpath = ".//class[@filename='{0}']/lines/line".format(src_path)
-            line_nodes = self._xml.findall(xpath)
+            violations = set()
+            measured = set()
+            for xml_document in self._xml:
+                line_nodes = xml_document.findall(xpath)
 
-            violations = [
-                Violation(int(line.get('number')), None)
-                for line in line_nodes
-                if int(line.get('hits', 0)) == 0
-            ]
-            measured = [
-                int(line.get('number')) for line in line_nodes
-            ]
+                violations = violations & set([
+                    Violation(int(line.get('number')), None)
+                    for line in line_nodes
+                    if int(line.get('hits', 0)) == 0
+                ])
+                measured = measured + [
+                    int(line.get('number')) for line in line_nodes
+                ]
 
             self._info_cache[src_path] = (violations, measured)
 
