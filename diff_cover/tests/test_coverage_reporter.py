@@ -11,8 +11,8 @@ class XmlCoverageReporterTest(unittest.TestCase):
         # Construct the XML report
         name = "subdir/coverage.xml"
         file_paths = ['file1.py', 'subdir/file2.py']
-        violations = [Violation(3, None), Violation(6, None), Violation(8, None)]
-        measured = [2, 3, 5, 6, 8]
+        violations = set([Violation(3, None), Violation(6, None), Violation(8, None)])
+        measured = set([2, 3, 5, 6, 8])
         xml = self._coverage_xml(file_paths, violations, measured)
 
         # Parse the report
@@ -44,7 +44,7 @@ class XmlCoverageReporterTest(unittest.TestCase):
 
         # Expect that we get no results
         result = coverage.violations('file.py')
-        self.assertEqual(result, [])
+        self.assertEqual(result, set([]))
 
     def _coverage_xml(self, file_paths, violations, measured):
         """

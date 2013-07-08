@@ -77,19 +77,24 @@ class XmlCoverageReporter(BaseViolationReporter):
 
             # Retrieve the <line> elements for this file
             xpath = ".//class[@filename='{0}']/lines/line".format(src_path)
-            violations = set()
+            violations = None
             measured = set()
             for xml_document in self._xml:
                 line_nodes = xml_document.findall(xpath)
-
-                violations = violations & set([
+                if violations is None:
+                    violations =  set(
                     Violation(int(line.get('number')), None)
                     for line in line_nodes
-                    if int(line.get('hits', 0)) == 0
-                ])
-                measured = measured + [
+                    if int(line.get('hits', 0)) == 0)
+                else:
+                    violations = violations & set(
+                        Violation(int(line.get('number')), None)
+                        for line in line_nodes
+                        if int(line.get('hits', 0)) == 0
+                    )
+                measured = measured | set(
                     int(line.get('number')) for line in line_nodes
-                ]
+                )
 
             self._info_cache[src_path] = (violations, measured)
 
