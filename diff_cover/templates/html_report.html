@@ -89,7 +89,6 @@
   </ul>
 </section>
 
-{# THE ACTUAL THING (get rid of the fake above)
 {% if src_stats %}
 <section id='code'>
   {% for src_path, stats in src_stats.iteritems() if stats.num_missing > 0 %}
@@ -100,8 +99,8 @@
     </div>
     <table><tr>
       <td class='linenos' valign='top'>
-	{% for hunk in stats.hunks %}
-	{% for line in hunk.getIter() %}
+	{% for hunk in stats.augmented_stats %}
+	{% for line in hunk %}
 	<p class='{# className matches /(violation|context)( indiff)?/
 	   Also, add a '+' before the line number if in the diff
 	   #}{{ "violation" if line.is_violation else "context" }}{#
@@ -119,13 +118,13 @@
       </td>
 
       <td class='thecode' valign='top'>
-	{% for hunk in stats.hunks %}
-	{% for line in hunk.getIter() %}
+	{% for hunk in stats.augmented_stats %}
+	{% for line in hunk %}
 	<p class='{# Same class name as above
 	   Highlight the python source, and substitute in ▮ for empty strings
 	   #}{{ "violation" if line.is_violation else "context" }}{#
 	   #}{{" indiff" if line.in_diff }}'{# (hidden newline)
-	  #}>{{ line.source|py_highlight|default("▮", true) }}</p>
+	  #}>{{ line.source|default("▮", true) }}</p>
 	{% endfor %}
 	{% if not loop.last %}
 
@@ -149,6 +148,5 @@
   </ul>
 </section>
 {% endif %}
-#}
 </body>
 </html>

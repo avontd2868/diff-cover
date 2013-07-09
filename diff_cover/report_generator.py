@@ -271,10 +271,12 @@ class Hunker(object):
 
         line_numbers = self.violations_reporter.violations(self.src_path)
         hunks = []
-        current_hunk = [self.line_numbers[0]]
+        if not line_numbers:
+            return []
+        current_hunk = [line_numbers[0]]
 
-        for i in range(len(self.line_numbers)-1):
-            if (self.line_numbers[i+1] - self.line_numbers[i]) < 6:
+        for i in range(len(line_numbers)-1):
+            if (line_numbers[i+1] - line_numbers[i]) < 6:
                 current_hunk.append(line_numbers[i+1])
             else:
                 hunks.append(list(current_hunk))
@@ -296,11 +298,11 @@ class Hunker(object):
 
         for hunk in self.hunkify():
             if hunk[0] > 2:
-                padded_hunks.append(zip(range(hunk[-1]+3)[hunk[0]-2:], [content[hunk[0]-2]:hunk[-1]+3]))
+                padded_hunks.append(zip(range(hunk[-1]+3)[hunk[0]-2:], [content[hunk[0]-2:hunk[-1]+3]]))
             elif hunk[0] > 1:
-                padded_hunks.append(zip(range(hunk[-1]+3)[hunk[0]-1:], [content[hunk[0]-1]:hunk[-1]+3]))
+                padded_hunks.append(zip(range(hunk[-1]+3)[hunk[0]-1:], [content[hunk[0]-1:hunk[-1]+3]]))
             else:
-                padded_hunks.append(zip(range(hunk[-1]+3)[hunk[0]:], [content[hunk[0]]:hunk[-1]+3]))
+                padded_hunks.append(zip(range(hunk[-1]+3)[hunk[0]:], [content[hunk[0]:hunk[-1]+3]]))
 
         # for hunk in padded_hunks:
         #     hunk_source = []
