@@ -8,5 +8,6 @@ install:
 script:
   - git remote update
   - nosetests --with-coverage --cover-package=diff_cover
+  - git remote update
   - coverage xml
   - diff-cover coverage.xml
