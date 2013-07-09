@@ -228,6 +228,7 @@ class TemplateReportGenerator(BaseReportGenerator):
         return {'percent_covered': self.percent_covered(src_path),
                 'missing_lines': missing_lines}
 
+
 class StringReportGenerator(TemplateReportGenerator):
     """
     Generate a string diff coverage report.
