@@ -2,42 +2,122 @@
 <html>
 <head>
 <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
+<style type='text/css' media='all'>
+@import url('diff_cover.css');
+</style>
 <title>Diff Coverage</title>
 </head>
 <body>
-<h1>Diff Coverage</h1>
-<p>Coverage Report: {{ report_name }}</p>
-<p>Diff: {{ diff_name }}</p>
-{% if src_stats %}
-<table border="1">
-<tr>
-<th>Source File</th>
-<th>Diff Coverage (%)</th>
-<th>Missing Line(s)</th>
-</tr>
-{% for src_path, stats in src_stats.iteritems() %}
-{% if stats.percent_covered < 100 %}
-<tr>
-<td>{{ src_path }}</td>
-<td>{{ stats.percent_covered|round(1) }}%</td>
-<td>{{ stats.missing_lines|join(',') }}</td>
-</tr>
-{% else %}
-<tr>
-<td>{{ src_path }}</td>
-<td>100%</td>
-<td>&nbsp;</td>
-</tr>
-{% endif %}
-{% endfor %}
-</table>
-<ul>
-<li><b>Total</b>: {{ total_num_lines }} line(s)</li>
-<li><b>Missing</b>: {{ total_num_missing }} line(s)</li>
-<li><b>Coverage</b>: {{ total_percent_covered }}%</li>
-</ul>
-{% else %}
-<p>No lines with coverage information in this diff.</p>
-{% endif %}
+<section id='header'>
+  <h1>Diff Coverage</h1>
+  <p>Coverage Report: {{ report_name }}</p>
+  <p>Diff: {{ diff_name }}</p>
+
+  <ul>
+    <li><b>Total</b>: {{ total_num_lines }} line(s)</li>
+    <li><b>Missing</b>: {{ total_num_missing }} line(s)</li>
+    <li><b>Coverage</b>: {{ total_percent_covered }}%</li>
+  </ul>
+</section>
+
+<section id='code'>
+  <div>
+    <div class='file-header'>
+      <h2>common/lib/xmodule/xmodule/capa_module.py</h2>
+      <p>72% diff coverage, 4 missing line(s)</p>
+    </div>
+    <table><tr>
+      <td class='linenos' valign='top'>
+	<p class='context'>73</p>
+	<p class='context'>74</p>
+	<p class='violation indiff'><span>+</span>75</p>
+	<p class='context'>76</p>
+	<p class='context'>77</p>
+
+	<p class='hunk-separator'>&vellip;</p>
+
+	<p class='context'>304</p>
+	<p class='context'>305</p>
+	<p class='violation indiff'><span>+</span>306</p>
+	<p class='context'>307</p>
+	<p class='context'>308</p>
+
+	<p class='hunk-separator'>&vellip;</p>
+
+	<p class='context'>425</p>
+	<p class='context'>426</p>
+	<p class='violation indiff'><span>+</span>427</p>
+	<p class='violation indiff'><span>+</span>428</p>
+	<p class='context'>429</p>
+	<p class='context'>430</p>
+      </td>
+
+      <td class='thecode' valign='top'>
+	<p class='context'>        """</p>
+	<p class='context'>        if isinstance(obj, complex):</p>
+	<p class='violation indiff'>            return u"{real:.7g}{imag:+.7g}*j".format(real=obj.real, imag=obj.imag)</p>
+	<p class='context'>        return json.JSONEncoder.default(self, obj)</p>
+	<p class='context'>▮</p>
+
+	<p class='hunk-separator'>&vellip;</p>
+
+	<p class='context'>            try:</p>
+	<p class='context'>                return Progress(score, total)</p>
+	<p class='violation indiff'>            except (TypeError, ValueError):</p>
+	<p class='context'>                log.exception("Got bad progress")</p>
+	<p class='context'>                return None</p>
+
+	<p class='hunk-separator'>&vellip;</p>
+
+	<p class='context'>                    url=cgi.escape(self.location.url()))</p>
+	<p class='context'>            )</p>
+	<p class='violation indiff'>            msg += u'&lt;p&gt;Error:&lt;/p&gt;&lt;p&gt;&lt;pre&gt;{msg}&lt;/pre&gt;&lt;/p&gt;'.format(msg=cgi.escape(err.message))</p>
+	<p class='violation indiff'>            msg += u'&lt;p&gt;&lt;pre&gt;{tb}&lt;/pre&gt;&lt;/p&gt;'.format(tb=cgi.escape(traceback.format_exc()))</p>
+	<p class='context'>            html = msg</p>
+	<p class='context'>▮</p>
+      </td>
+    </tr></table>
+  </div>
+
+{# THE ACTUAL THING (get rid of the fake above)
+  {% if src_stats %}
+  {% for src_path, stats in src_stats.iteritems() if stats.num_missing > 0 %}
+  <div>
+    <div class='file-header'>
+      <h2>{{ src_path|e }}</h2>
+      <p>{{ stats.percent_covered|round(1) }}% diff coverage, {{ stats.num_missing }} missing line(s)</p>
+    </div>
+    <table><tr>
+      <td class='linenos' valign='top'>
+	{% for hunk in stats.hunks %}
+	{% for line in hunk.getIter() %}
+	<p class='{{ line.class }}'>{{ line.linenum }}</p>
+	{% endfor %}
+	{% if not loop.last %}
+
+	<p class='hunk-separator'>&vellip;</p>
+
+	{% endif %}
+	{% endfor %}
+      </td>
+
+      <td class='thecode' valign='top'>
+	{% for hunk in stats.hunks %}
+	{% for line in hunk.getIter() %}
+	<p class='{{ line.class }}'><span class='diff'>{{ '+' if line.indiff else '&nbsp;' }}</span>{{ line.source }}</p>
+	{% endfor %}
+	{% if not loop.last %}
+
+	<p class='hunk-separator'>&vellip;</p>
+
+	{% endif %}
+	{% endfor %}
+      </td>
+    </tr></table>
+  </div>
+  {% endfor %}
+  {% endif %}
+#}
+</section>
 </body>
 </html>

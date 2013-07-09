@@ -187,7 +187,7 @@ class TemplateReportGenerator(BaseReportGenerator):
 
             # Write the report to the output file
             # (encode to a byte string)
-            output_file.write(report.encode())
+            output_file.write(report.encode('utf-8'))
 
     def _context(self):
         """
@@ -199,11 +199,14 @@ class TemplateReportGenerator(BaseReportGenerator):
          'diff_name': DIFF_NAME,
          'src_stats': {SRC_PATH: {
                             'percent_covered': PERCENT_COVERED,
-                            'missing_lines': [LINE_NUM, ...]
+                            'num_missing': NUM_MISSING,
+                            'hunks': [HUNK, ...]
                             }, ... }
          'total_num_lines': TOTAL_NUM_LINES,
          'total_num_missing': TOTAL_NUM_MISSING,
          'total_percent_covered': TOTAL_PERCENT_COVERED}
+
+        where HUNKs are instances of HunkObjects
         """
 
         # Calculate the information to pass to the template

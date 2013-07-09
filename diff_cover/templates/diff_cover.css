@@ -1,0 +1,110 @@
+/*
+  copied liberally from Ned's coverage.py
+  http://nedbatchelder.com/code/coverage/
+  */
+
+/* Page-wide styles */
+html, body, h1, h2, h3, p, td, th {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+}
+
+/* Set baseline grid to 16 pt. */
+body {
+    font-family: georgia, serif;
+    font-size: 1em;
+}
+
+html>body {
+    font-size: 16px;
+}
+
+/* Summary styles */
+section#header {
+    padding: 1em 3em 0;
+    background-color: #f6f6f6;
+    border-bottom: 1px solid #c4c4c4;
+}
+
+h1 {
+    font-size: 1.5em;
+}
+
+/* File header styles */
+section#code div.file-header {
+    margin: 1.5em 1em 0.5em;
+}
+
+h2 {
+    font-size: 1.25em;
+}
+
+/* Quoted source styles */
+#code table {
+    border-collapse: collapse;
+    font-family: "courier new", monospace;
+    border-width: 1px 0;
+    border-style: solid;
+    border-color: #c4c4c4;
+}
+
+/* left column */
+.linenos p {
+    text-align: right;
+    margin: 0;
+    padding: 0 .5em 0 1em;
+    color: #999999;
+    background-color: #f0f0f0;
+    font-family: verdana, sans-serif;
+    font-size: .625em;   /* 10/16 */
+    line-height: 1.6em;  /* 16/10 */
+}
+
+/* right column */
+td.thecode {
+    width: 100%;
+}
+
+.thecode p {
+    margin: 0;
+    padding: 0 0 0 .5em;
+    white-space: pre;
+    border-left: 2px solid #bbbbbb;
+    font-size: .75em;           /* 12/16 */
+    line-height: 1.33333333em;  /* 16/12 */
+}
+
+.thecode p.context {
+}
+
+/* when in diff */
+.linenos p.indiff {
+    color: green;
+}
+
+p.indiff span {
+    font-weight: bold;
+}
+
+/* when in error */
+td p.violation {
+}
+
+.thecode p.violation {
+   background: #ffdddd; 
+   border-left-color: #ff0000;
+}
+
+/* when a hunk separator */
+.linenos p.hunk-separator {
+    background-color: #e8e8e8;
+    line-height: 3.2em;  /* 32/10 */
+}
+
+.thecode p.hunk-separator {
+    padding-left: 5em;
+    background-color: #f6f6f6;
+    line-height: 2.66666667em;  /* 32/12 */
+}
