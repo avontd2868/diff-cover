@@ -33,7 +33,7 @@ h1 {
 }
 
 /* File header styles */
-section#code div.file-header {
+div.file-header, #perfect-code {
     margin: 1.5em 1em 0.5em;
 }
 

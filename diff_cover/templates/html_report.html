@@ -20,6 +20,7 @@
   </ul>
 </section>
 
+{# example (delete later!) #}
 <section id='code'>
   <div>
     <div class='file-header'>
@@ -78,9 +79,19 @@
       </td>
     </tr></table>
   </div>
+</section>
+
+<section id='perfect-code'>
+  <h2>Covered Code</h2>
+  <p>The following files have 100% diff coverage. 😃{# smiley face #}</p>
+  <ul>
+    <li>common/lib/xmodule/xmodule/tests/test_capa_module.py</li>
+  </ul>
+</section>
 
 {# THE ACTUAL THING (get rid of the fake above)
-  {% if src_stats %}
+{% if src_stats %}
+<section id='code'>
   {% for src_path, stats in src_stats.iteritems() if stats.num_missing > 0 %}
   <div>
     <div class='file-header'>
@@ -91,7 +102,13 @@
       <td class='linenos' valign='top'>
 	{% for hunk in stats.hunks %}
 	{% for line in hunk.getIter() %}
-	<p class='{{ line.class }}'>{{ line.linenum }}</p>
+	<p class='{# className matches /(violation|context)( indiff)?/
+	   Also, add a '+' before the line number if in the diff
+	   #}{{ "violation" if line.is_violation else "context" }}{#
+	   #}{{" indiff" if line.in_diff }}'{#
+	  #}>{#
+	  #}{% if line.in_diff %}<span>+</span>{% endif %}{#
+	  #}{{ line.linenum }}</p>
 	{% endfor %}
 	{% if not loop.last %}
 
@@ -104,7 +121,11 @@
       <td class='thecode' valign='top'>
 	{% for hunk in stats.hunks %}
 	{% for line in hunk.getIter() %}
-	<p class='{{ line.class }}'><span class='diff'>{{ '+' if line.indiff else '&nbsp;' }}</span>{{ line.source }}</p>
+	<p class='{# Same class name as above
+	   Highlight the python source, and substitute in ▮ for empty strings
+	   #}{{ "violation" if line.is_violation else "context" }}{#
+	   #}{{" indiff" if line.in_diff }}'{# (hidden newline)
+	  #}>{{ line.source|py_highlight|default("▮", true) }}</p>
 	{% endfor %}
 	{% if not loop.last %}
 
@@ -116,8 +137,18 @@
     </tr></table>
   </div>
   {% endfor %}
-  {% endif %}
-#}
 </section>
+
+<section id='perfect-code'>
+  <h2>Covered Code</h2>
+  <p>The following files have 100% diff coverage. 😃{# smiley face #}</p>
+  <ul>
+    {% for src_path, stats in src_stats.iteritems() if stats.num_missing == 0 %}
+    <li>{{ src_path|e }}</li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+#}
 </body>
 </html>
