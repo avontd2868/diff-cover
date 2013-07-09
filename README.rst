@@ -109,7 +109,9 @@ to generate the coverage XML report, then make sure you run
 
 __ http://nedbatchelder.com/code/coverage/
 
+**Issue**: GitDiffTool._execute() complains that 'origin/master...HEAD' is ambiguous.
 
+**Solution**: run `git remote update` before `nosetests --with-coverage`
 
 License
 -------
