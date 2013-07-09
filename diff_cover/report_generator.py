@@ -269,7 +269,7 @@ class Hunker(object):
 
         """
 
-        line_numbers = self.violations_reporter.violations(self.src_path)
+        line_numbers = [violation.line for violation in self.violations_reporter.violations(self.src_path)]
         hunks = []
         if not line_numbers:
             return []
