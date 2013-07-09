@@ -45,7 +45,6 @@ def generate_report(coverage_xml=None, html_report=None):
 
     coverage = XmlCoverageReporter(xml_roots, coverage_xml)
 
-    print coverage_xml
     # Build a report generator
     if html_report is not None:
         reporter = HtmlReportGenerator(coverage, diff)
