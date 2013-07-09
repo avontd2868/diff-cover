@@ -121,7 +121,6 @@ class DiffCoverIntegrationTest(unittest.TestCase):
 
         # Patch sys.argv
         input_list = ['diff-cover'] + coverage_xml_paths + ['--html-report', html_report_path]
-        print input_list
         self._set_sys_args(input_list)
 
         # Run diff-cover
@@ -172,7 +171,6 @@ class DiffCoverIntegrationTest(unittest.TestCase):
         """
         Patch sys.argv with the argument array `argv`.
         """
-        print argv
         self._mock_sys.argv = argv
 
     def _capture_stdout(self, string_buffer):
