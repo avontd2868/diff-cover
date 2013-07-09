@@ -9,4 +9,4 @@ script: nosetests
 after_script:
   - nosetests --with-coverage --cover-package diff_cover
   - coverage xml
-  - diff-cover coverage.xml --html-report diff_cover_report.html
+  - diff-cover coverage.xml
