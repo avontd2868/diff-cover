@@ -6,6 +6,7 @@ from abc import ABCMeta, abstractmethod
 from jinja2 import Environment, PackageLoader
 from lazy import lazy
 from textwrap import dedent
+from collections import namedtuple
 
 
 class DiffViolations(object):
@@ -157,6 +158,8 @@ class BaseReportGenerator(object):
         }
 
 
+
+
 # Set up the template environment
 TEMPLATE_LOADER = PackageLoader(__package__)
 TEMPLATE_ENV = Environment(loader=TEMPLATE_LOADER,
@@ -213,9 +216,16 @@ class TemplateReportGenerator(BaseReportGenerator):
         src_stats = {src: self._src_path_stats(src)
                      for src in self.src_paths()}
 
+        augmented_stats = {}
+        for src in self.src_paths():
+            hunker = Hunker(src, self._violations, self._diff)
+            augmented_stats[src] = hunker.classify()
+
+
         return {'report_name': self.coverage_report_name(),
                 'diff_name': self.diff_report_name(),
                 'src_stats': src_stats,
+                'augmented_stats': augmented_stats,
                 'total_num_lines': self.total_num_lines(),
                 'total_num_missing': self.total_num_missing(),
                 'total_percent_covered': self.total_percent_covered()}
@@ -229,7 +239,8 @@ class TemplateReportGenerator(BaseReportGenerator):
                          in self.missing_lines(src_path)]
 
         return {'percent_covered': self.percent_covered(src_path),
-                'missing_lines': missing_lines}
+                'missing_lines': missing_lines,
+                'num_missing': len(missing_lines)}
 
 class StringReportGenerator(TemplateReportGenerator):
     """
@@ -243,3 +254,97 @@ class HtmlReportGenerator(TemplateReportGenerator):
     Generate an HTML formatted diff coverage report.
     """
     TEMPLATE_NAME = "html_report.html"
+
+
+class Hunker(object):
+
+    def __init__(self, src_path, violations_reporter, diff_reporter):
+
+        self.src_path = src_path
+        self.violations_reporter = violations_reporter
+        self.diff_reporter = diff_reporter
+
+    def hunkify(self):
+        """
+
+        """
+
+        line_numbers = self.violations_reporter.violations(self.src_path)
+        hunks = []
+        current_hunk = [self.line_numbers[0]]
+
+        for i in range(len(self.line_numbers)-1):
+            if (self.line_numbers[i+1] - self.line_numbers[i]) < 6:
+                current_hunk.append(line_numbers[i+1])
+            else:
+                hunks.append(list(current_hunk))
+                del current_hunk[:]
+                current_hunk.append(line_numbers[i+1])
+
+        return hunks
+
+
+    def code_and_context(self):
+        """
+    
+        """
+
+        f = open(self.src_path)
+        content = f.readlines()
+
+        padded_hunks = []
+
+        for hunk in self.hunkify():
+            if hunk[0] > 2:
+                padded_hunks.append(zip(range(hunk[-1]+3)[hunk[0]-2:], [content[hunk[0]-2]:hunk[-1]+3]))
+            elif hunk[0] > 1:
+                padded_hunks.append(zip(range(hunk[-1]+3)[hunk[0]-1:], [content[hunk[0]-1]:hunk[-1]+3]))
+            else:
+                padded_hunks.append(zip(range(hunk[-1]+3)[hunk[0]:], [content[hunk[0]]:hunk[-1]+3]))
+
+        # for hunk in padded_hunks:
+        #     hunk_source = []
+        #     for i in hunk[0]:
+        #         if i in self.violations_reporter.violations(self.src_path)
+        #         hunk_source.append((hunk[i], content[hunk[i]])
+        #     source.append(hunk_source)
+
+        return padded_hunks
+
+    def classify(self):
+
+        toTemplate = []
+
+        Line = namedtuple('line', 'line_num line_code line_type')
+
+        for hunk in self.code_and_context():
+            current_hunk = []
+
+            for i in range(len(hunk)):
+                if hunk[i][0] in self.violations_reporter.violations(self.src_path):
+                    current_hunk.append(Line(hunk[i][0], hunk[i][1], 'VIOLATION'))
+                elif hunk[i][0] in self.diff_reporter.lines_changed(self.src_path):
+                    current_hunk.append(Line(hunk[i][0], hunk[i][1], 'NEWCONTEXT'))
+                else:
+                    current_hunk.append(Line(hunk[i][0], hunk[i][1], 'OLDCONTEXT'))
+
+            toTemplate.append(current_hunk)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
