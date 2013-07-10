@@ -5,9 +5,10 @@ Classes for generating diff coverage reports.
 from abc import ABCMeta, abstractmethod
 from jinja2 import Environment, PackageLoader
 from lazy import lazy
-from textwrap import dedent
 from collections import namedtuple
-
+from pygments import highlight
+from pygments.lexers import PythonLexer
+from pygments.formatters import HtmlFormatter
 
 class DiffViolations(object):
     """
@@ -158,13 +159,18 @@ class BaseReportGenerator(object):
         }
 
 
+PYG_LEXER = PythonLexer()
+PYG_HTML_FORMATTER = HtmlFormatter(nowrap=True)
+def handle_py_highlight(source):
+    pretty_source = highlight(source, PYG_LEXER, PYG_HTML_FORMATTER)
+    return pretty_source[:-1]  # Get rid of the newline at the end
 
 
 # Set up the template environment
 TEMPLATE_LOADER = PackageLoader(__package__)
 TEMPLATE_ENV = Environment(loader=TEMPLATE_LOADER,
                            trim_blocks=True)
-
+TEMPLATE_ENV.filters['py_highlight'] = handle_py_highlight
 
 class TemplateReportGenerator(BaseReportGenerator):
     """
