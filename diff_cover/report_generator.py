@@ -306,9 +306,10 @@ class Hunker(object):
 
         for hunk in self.hunkify():
             if hunk[0] - self.lines_of_context < 0:
-                padded_hunks.append(zip(range(0, hunk[-1]+self.lines_of_context+1), content[:hunk[-1]+self.lines_of_context]))
+                padded_hunks.append(zip(range(0, hunk[-1] + self.lines_of_context + 1), content[ : hunk[-1] + self.lines_of_context]))
             else:
-                padded_hunks.append(zip(range(hunk[0]-self.lines_of_context, hunk[-1]+self.lines_of_context + 1), content[hunk[0]-self.lines_of_context:hunk[-1]+self.lines_of_context+1]))
+                padded_hunks.append(zip(range(hunk[0] - self.lines_of_context, hunk[-1] + self.lines_of_context + 1), content[hunk[0] - self.lines_of_context - 1 : hunk[-1] + self.lines_of_context]))
+            
        
         return padded_hunks
 
