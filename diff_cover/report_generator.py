@@ -289,6 +289,7 @@ class Hunker(object):
                 hunks.append(list(current_hunk))
                 del current_hunk[:]
                 current_hunk.append(self.line_numbers[i+1])
+	hunks.append(current_hunk)
 
         return hunks
 
@@ -309,7 +310,6 @@ class Hunker(object):
                 padded_hunks.append(zip(range(0, hunk[-1] + self.lines_of_context + 1), content[ : hunk[-1] + self.lines_of_context]))
             else:
                 padded_hunks.append(zip(range(hunk[0] - self.lines_of_context, hunk[-1] + self.lines_of_context + 1), content[hunk[0] - self.lines_of_context - 1 : hunk[-1] + self.lines_of_context]))
-            
        
         return padded_hunks
 
