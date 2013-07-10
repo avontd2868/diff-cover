@@ -225,7 +225,7 @@ class TemplateReportGenerator(BaseReportGenerator):
 
         augmented_stats = {}
         for src in self.src_paths():
-            hunker = Hunker(src, self._violations, self._diff)
+            hunker = Hunker(src, self.missing_lines(src), self._diff)
             augmented_stats[src] = hunker.classify()
 
 
@@ -265,12 +265,12 @@ class HtmlReportGenerator(TemplateReportGenerator):
 
 class Hunker(object):
 
-    def __init__(self, src_path, violations_reporter, diff_reporter):
+    def __init__(self, src_path, missing_lines, diff_reporter):
 
         self.src_path = src_path
-        self.violations_reporter = violations_reporter
+        self.line_numbers = missing_lines
         self.diff_reporter = diff_reporter
-        self.line_numbers = [violation.line for violation in self.violations_reporter.violations(self.src_path)]
+        self.lines_of_context = 2
 
     def hunkify(self):
         """
@@ -283,7 +283,7 @@ class Hunker(object):
         current_hunk = [self.line_numbers[0]]
 
         for i in range(len(self.line_numbers)-1):
-            if (self.line_numbers[i+1] - self.line_numbers[i]) < 6:
+            if (self.line_numbers[i+1] - self.line_numbers[i]) < 2 * self.lines_of_context + 2:
                 current_hunk.append(self.line_numbers[i+1])
             else:
                 hunks.append(list(current_hunk))
@@ -303,21 +303,13 @@ class Hunker(object):
 
         padded_hunks = []
 
+
         for hunk in self.hunkify():
-            if hunk[0] > 2:
-                padded_hunks.append(zip(range(hunk[-1]+3)[hunk[0]-2:], content[hunk[0]-2:hunk[-1]+3]))
-            elif hunk[0] > 1:
-                padded_hunks.append(zip(range(hunk[-1]+3)[hunk[0]-1:], content[hunk[0]-1:hunk[-1]+3]))
+            if hunk[0] - self.lines_of_context < 0:
+                padded_hunks.append(zip(range(0, hunk[-1]+self.lines_of_context+1), content[:hunk[-1]+self.lines_of_context]))
             else:
-                padded_hunks.append(zip(range(hunk[-1]+3)[hunk[0]:], content[hunk[0]:hunk[-1]+3]))
-
-        # for hunk in padded_hunks:
-        #     hunk_source = []
-        #     for i in hunk[0]:
-        #         if i in self.violations_reporter.violations(self.src_path)
-        #         hunk_source.append((hunk[i], content[hunk[i]])
-        #     source.append(hunk_source)
-
+                padded_hunks.append(zip(range(hunk[0]-self.lines_of_context, hunk[-1]+self.lines_of_context + 1), content[hunk[0]-self.lines_of_context:hunk[-1]+self.lines_of_context+1]))
+       
         return padded_hunks
 
     def classify(self):
