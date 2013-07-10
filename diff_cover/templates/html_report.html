@@ -79,11 +79,11 @@
 	{% for line in hunk %}
 	<p class='{# className matches /(violation|context)( indiff)?/
 	   Also, add a '+' before the line number if in the diff
-	   #}{{ "violation" if line.is_violation else "context" }}{#
-	   #}{{" indiff" if line.in_diff }}'{#
+	   #}{{ "violation" if line.line_type == "VIOLATION" else "context" }}{#
+	   #}{{" indiff" if line.line_type in ["VIOLATION", "NEWCONTEXT"] }}'{#
 	  #}>{#
-	  #}{% if line.in_diff %}<span>+</span>{% endif %}{#
-	  #}{{ line.linenum }}</p>
+	  #}{% if line.line_type in ["VIOLATION", "NEWCONTEXT"] %}<span>+</span>{% endif %}{#
+	  #}{{ line.line_num }}</p>
 	{% endfor %}
 	{% if not loop.last %}
 
@@ -98,9 +98,9 @@
 	{% for line in hunk %}
 	<p class='{# Same class name as above
 	   Highlight the python source, and substitute in ▮ for empty strings
-	   #}{{ "violation" if line.is_violation else "context" }}{#
-	   #}{{" indiff" if line.in_diff }}'{# (hidden newline)
-	  #}>{{ line.source|py_highlight|default("▮", true) }}</p>
+	   #}{{ "violation" if line.line_type == "VIOLATION" else "context" }}{#
+	   #}{{" indiff" if line.line_type in ["VIOLATION", "NEWCONTEXT"] }}'{#
+	  #}>{{ line.line_code|py_highlight|default("▮", true) }}</p>
 	{% endfor %}
 	{% if not loop.last %}
 
