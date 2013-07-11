@@ -2,8 +2,7 @@ language: python
 python:
   - "2.7"
 before_install:
-  - "git diff master"
-  - "git diff origin/master"
+  - git fetch origin
 install:
   - "pip install -r requirements.txt --use-mirrors"
   - "pip install -r test-requirements.txt --use-mirrors"
