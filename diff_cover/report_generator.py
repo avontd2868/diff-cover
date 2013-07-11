@@ -225,8 +225,8 @@ class TemplateReportGenerator(BaseReportGenerator):
 
         augmented_stats = {}
         for src in self.src_paths():
-            hunker = Hunker(src, self.missing_lines(src), self._diff)
-            augmented_stats[src] = hunker.classify()
+            augmenter = ViolationInfoAugmenter(src, self.missing_lines(src), self._diff)
+            augmented_stats[src] = augmenter.classify()
 
 
         return {'report_name': self.coverage_report_name(),
@@ -263,20 +263,23 @@ class HtmlReportGenerator(TemplateReportGenerator):
     TEMPLATE_NAME = "html_report.html"
 
 
-class Hunker(object):
+class ViolationInfoAugmenter(object):
+    """
+    
+    """
 
     def __init__(self, src_path, missing_lines, diff_reporter):
-
         self.src_path = src_path
         self.line_numbers = missing_lines
         self.diff_reporter = diff_reporter
         self.lines_of_context = 2
 
-    def hunkify(self):
+    def group_violations(self):
         """
-
+	Operates on a list of line numbers representing violations in a single file.
+	Groups numbers that are close to each other into hunks and returns a list of
+	lists representing a list of hunks.
         """
-
         hunks = []
         if not self.line_numbers:
             return []
@@ -296,16 +299,16 @@ class Hunker(object):
 
     def code_and_context(self):
         """
-    
+    	Operates on a list of lists of violation line numbers for a single file. 
+	Returns a list of of lists of ordered pairs of the form (line_number, line_code)
+	which includes violation lines and two lines of context around each violation.
         """
-
         f = open(self.src_path)
         content = f.readlines()
 
         padded_hunks = []
 
-
-        for hunk in self.hunkify():
+        for hunk in self.group_violations():
             if hunk[0] - self.lines_of_context < 0:
                 padded_hunks.append(zip(range(0, hunk[-1] + self.lines_of_context + 1), content[ : hunk[-1] + self.lines_of_context]))
             else:
@@ -314,21 +317,30 @@ class Hunker(object):
         return padded_hunks
 
     def classify(self):
-
+	"""
+	Operates on a list of lists of ordered pairs of the form (line_number, line_code).
+	Returns a a list of lists of Line objects containing information to display in the html
+	report.
+	"""
         toTemplate = []
 
-        Line = namedtuple('line', 'line_num line_code line_type')
+        Line = namedtuple('line', 'num code is_violation in_diff')
 
         for hunk in self.code_and_context():
             current_hunk = []
 
             for i in range(len(hunk)):
                 if hunk[i][0] in self.line_numbers:
-                    current_hunk.append(Line(hunk[i][0], hunk[i][1], 'VIOLATION'))
+		    if hunk[i][0] in self.diff_reporter.lines_changed(self.src_path):
+                        current_hunk.append(Line(hunk[i][0], hunk[i][1], True, True))
+		    else:
+			current_hunk.append(Line(hunk[i][0], hunk[i][1], True, False))
                 elif hunk[i][0] in self.diff_reporter.lines_changed(self.src_path):
-                    current_hunk.append(Line(hunk[i][0], hunk[i][1], 'NEWCONTEXT'))
+                    current_hunk.append(Line(hunk[i][0], hunk[i][1], False, True))
                 else:
-                    current_hunk.append(Line(hunk[i][0], hunk[i][1], 'OLDCONTEXT'))
+                    current_hunk.append(Line(hunk[i][0], hunk[i][1], False, False))
 
             toTemplate.append(current_hunk)
+
         return toTemplate
+
