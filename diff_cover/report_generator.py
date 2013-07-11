@@ -7,8 +7,8 @@ from jinja2 import Environment, PackageLoader
 from lazy import lazy
 from collections import namedtuple
 from pygments import highlight
-from pygments.lexers import PythonLexer
-from pygments.formatters import HtmlFormatter
+from pygments.lexers import PythonLexer  # pylint: disable=E0611
+from pygments.formatters import HtmlFormatter  # pylint: disable=E0611
 
 class DiffViolations(object):
     """
@@ -161,7 +161,12 @@ class BaseReportGenerator(object):
 
 PYG_LEXER = PythonLexer()
 PYG_HTML_FORMATTER = HtmlFormatter(nowrap=True)
+
+
 def handle_py_highlight(source):
+    """
+    Create a Jinja2 filter to map python source code into formatted HTML
+    """
     pretty_source = highlight(source, PYG_LEXER, PYG_HTML_FORMATTER)
     return pretty_source[:-1]  # Get rid of the newline at the end
 
@@ -171,6 +176,7 @@ TEMPLATE_LOADER = PackageLoader(__package__)
 TEMPLATE_ENV = Environment(loader=TEMPLATE_LOADER,
                            lstrip_blocks=True,
                            trim_blocks=True)
+# Add the python highlighter
 TEMPLATE_ENV.filters['py_highlight'] = handle_py_highlight
 
 class TemplateReportGenerator(BaseReportGenerator):
@@ -265,7 +271,7 @@ class HtmlReportGenerator(TemplateReportGenerator):
 
 class ViolationInfoAugmenter(object):
     """
-    
+    Add source code and context lines to a list of violations.
     """
 
     def __init__(self, src_path, missing_lines, diff_reporter):
@@ -276,53 +282,58 @@ class ViolationInfoAugmenter(object):
 
     def group_violations(self):
         """
-	Operates on a list of line numbers representing violations in a single file.
-	Groups numbers that are close to each other into hunks and returns a list of
-	lists representing a list of hunks.
+        Operates on a list of line numbers representing violations in a single file.
+        Groups numbers that are close to each other into hunks and returns a list of
+        lists representing a list of hunks.
         """
         hunks = []
         if not self.line_numbers:
             return []
         current_hunk = [self.line_numbers[0]]
 
-        for i in range(len(self.line_numbers)-1):
-            if (self.line_numbers[i+1] - self.line_numbers[i]) < 2 * self.lines_of_context + 2:
-                current_hunk.append(self.line_numbers[i+1])
+        for i in range(len(self.line_numbers) - 1):
+            if (self.line_numbers[i + 1] - self.line_numbers[i]) < 2 * self.lines_of_context + 2:
+                current_hunk.append(self.line_numbers[i + 1])
             else:
                 hunks.append(list(current_hunk))
                 del current_hunk[:]
-                current_hunk.append(self.line_numbers[i+1])
-	hunks.append(current_hunk)
+                current_hunk.append(self.line_numbers[i + 1])
+        hunks.append(current_hunk)
 
         return hunks
 
-
     def code_and_context(self):
         """
-    	Operates on a list of lists of violation line numbers for a single file. 
-	Returns a list of of lists of ordered pairs of the form (line_number, line_code)
-	which includes violation lines and two lines of context around each violation.
+        Operates on a list of lists of violation line numbers for a single file.
+        Returns a list of of lists of ordered pairs of the form (line_number, line_code)
+        which includes violation lines and two lines of context around each violation.
         """
-        f = open(self.src_path)
-        content = f.readlines()
+        code_file = open(self.src_path)
+        content = code_file.readlines()
 
         padded_hunks = []
 
         for hunk in self.group_violations():
             if hunk[0] - self.lines_of_context < 0:
-                padded_hunks.append(zip(range(0, hunk[-1] + self.lines_of_context + 1), content[ : hunk[-1] + self.lines_of_context]))
+                padded_hunks.append(zip(
+                    range(0, hunk[-1] + self.lines_of_context + 1),
+                    content[:hunk[-1] + self.lines_of_context]
+                ))
             else:
-                padded_hunks.append(zip(range(hunk[0] - self.lines_of_context, hunk[-1] + self.lines_of_context + 1), content[hunk[0] - self.lines_of_context - 1 : hunk[-1] + self.lines_of_context]))
+                padded_hunks.append(zip(
+                    range(hunk[0] - self.lines_of_context, hunk[-1] + self.lines_of_context + 1),
+                    content[hunk[0] - self.lines_of_context - 1:hunk[-1] + self.lines_of_context]
+                ))
        
         return padded_hunks
 
     def classify(self):
-	"""
-	Operates on a list of lists of ordered pairs of the form (line_number, line_code).
-	Returns a a list of lists of Line objects containing information to display in the html
-	report.
-	"""
-        toTemplate = []
+        """
+        Operates on a list of lists of ordered pairs of the form (line_number, line_code).
+        Returns a a list of lists of Line objects containing information to display in the html
+        report.
+        """
+        hunk_list = []
 
         Line = namedtuple('line', 'num code is_violation in_diff')
 
@@ -331,16 +342,15 @@ class ViolationInfoAugmenter(object):
 
             for i in range(len(hunk)):
                 if hunk[i][0] in self.line_numbers:
-		    if hunk[i][0] in self.diff_reporter.lines_changed(self.src_path):
+                    if hunk[i][0] in self.diff_reporter.lines_changed(self.src_path):
                         current_hunk.append(Line(hunk[i][0], hunk[i][1], True, True))
-		    else:
-			current_hunk.append(Line(hunk[i][0], hunk[i][1], True, False))
+                    else:
+                        current_hunk.append(Line(hunk[i][0], hunk[i][1], True, False))
                 elif hunk[i][0] in self.diff_reporter.lines_changed(self.src_path):
                     current_hunk.append(Line(hunk[i][0], hunk[i][1], False, True))
                 else:
                     current_hunk.append(Line(hunk[i][0], hunk[i][1], False, False))
 
-            toTemplate.append(current_hunk)
+            hunk_list.append(current_hunk)
 
-        return toTemplate
-
+        return hunk_list
