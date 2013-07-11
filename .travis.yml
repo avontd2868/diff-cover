@@ -4,5 +4,6 @@ python:
 install:
   - "pip install -r requirements.txt --use-mirrors"
   - "pip install -r test-requirements.txt --use-mirrors"
+before_script: "git remote update"
 script: ./scripts/run_tests.sh
 after_script: ./scripts/run_diff_cover.sh
